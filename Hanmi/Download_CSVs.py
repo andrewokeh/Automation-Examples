@@ -3,21 +3,17 @@ import os
 import glob
 import time
 import datetime as dt
-
 import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from node_list import node_urls
 
-hanmi_folder = r'C:\Users\user\Downloads\hanmi_automation'
+hanmi_folder = rf'C:\Users\user\Downloads\hanmi_automation_{dt.datetime.now().strftime('%Y_%m_%d')}'
 if not os.path.exists(hanmi_folder):  # Create hanmi_automation folder if it doesn't exist
     os.makedirs(hanmi_folder)
 
 prefs = {
-    "detach": True,
     "download.default_directory": hanmi_folder,
     "download.directory_upgrade": True,
     "download.prompt_for_download": False,
@@ -25,11 +21,10 @@ prefs = {
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_experimental_option("prefs", prefs)
-# chrome_options.add_experimental_option("detach", True)
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+driver = webdriver.Chrome(options=chrome_options)
 
 # Open login page
-driver.get("redacted") # Removed for privacy
+driver.get(os.getenv("ENDPOINT"))
 time.sleep(1)
 driver.find_element(By.ID, value="details-button").click()  # Advanced button
 time.sleep(1)
@@ -47,7 +42,7 @@ time.sleep(1)
 driver.find_element(By.CLASS_NAME, value="sw-btn-t").click()
 time.sleep(1)
 
-# Go through each node URL, set start/end date, download CSV (not included on GitHub repo)
+# Go through each node URL, set start/end date, download CSV
 for node in node_urls:
     print(f"Current node: {node}\nURL: {node_urls[node]}")
     driver.get(node_urls[node])
@@ -134,3 +129,4 @@ for node in node_urls:
     print(max_file)
     os.rename(max_file, fr"{hanmi_folder}\{node}.csv")
     time.sleep(5)
+    
