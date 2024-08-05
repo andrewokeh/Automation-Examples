@@ -47,6 +47,40 @@ def get_call_queues(domain: str, access_token: str) -> list:
     return data
 
 
+def read_agents_in_queue(domain: str, callqueue: str, access_token: str) -> list:
+    url = f"https://phones.californiatelecom.com/ns-api/v2/domains/{domain}/callqueues/{callqueue}/agents"
+
+    headers = {
+        "accept": "application/json",
+        "authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+    # print(response.text)
+    return data
+
+
+def update_agent_in_queue(domain: str, callqueue: str, agent_id: str, access_token: str) -> list:
+    url = f"https://phones.californiatelecom.com/ns-api/v2/domains/{domain}/callqueues/{callqueue}/agents/{agent_id}"
+
+    payload = {
+        "callqueue-agent-wrap-up-allowance-seconds": 10,
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.put(url, json=payload, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+    print(response.text)
+    return data
+
+
 def update_call_queue(domain: str, callqueue: str, access_token: str) -> list:
     url = f"https://phones.californiatelecom.com/ns-api/v2/domains/{domain}/callqueues/{callqueue}"
 
@@ -98,7 +132,7 @@ def add_answer_rule(domain: str, user: str, access_token: str) -> list:
         "enabled": "yes",
         "forward-always": {
             "enabled": "yes",
-            "parameters": ["8005555555"]
+            "parameters": [""]
         }
     }
     headers = {
@@ -155,7 +189,7 @@ def update_domain(domain: str, access_token: str) -> list:
     url = f"https://phones.californiatelecom.com/ns-api/v2/domains/{domain}"
 
     payload = {
-        "email-send-from-address": "email@address"
+        "email-send-from-address": ""
     }
 
     headers = {
@@ -173,15 +207,17 @@ def update_domain(domain: str, access_token: str) -> list:
 def main():
     access_token = get_access_token(input("Username: "), getpass("Password: "))
     print(access_token)
-    # call_queues = get_call_queues("PacificDermatology", access_token)
-    # call_queue_exts = set()
-    # for queue in call_queues:
-    #     call_queue_exts.add(queue["callqueue"])
-    #
-    # for queue in call_queue_exts:
-    #
-    #
-    # print(call_queue_exts)
+    call_queues = get_call_queues("", access_token)
+    call_queue_exts = set()
+    for queue in call_queues:
+        call_queue_exts.add(queue["callqueue"])
+
+    for queue in call_queue_exts:
+        print(queue)
+        agents = read_agents_in_queue("", queue, access_token)
+        for agent in agents:
+            print(agent["callqueue-agent-id"])
+            update_agent_in_queue("", queue, agent["callqueue-agent-id"], access_token)
 
 
 if __name__ == "__main__":
